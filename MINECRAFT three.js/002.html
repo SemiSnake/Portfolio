@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>My first three.js app</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div id="blocker">
+			<div id="instructions">
+			   <span style="font-size: 36px">Click to play</span>
+			   <br /><br />
+			   Move: WASD<br />
+			   Jump: SPACE<br />
+			   Look: MOUSE
+			</div>
+		 </div>
+		<!-- Import maps polyfill -->
+		<!-- Remove this when import maps will be widely supported -->
+		<script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+		
+		<script type="importmap">
+			{
+				"imports": {
+					"three": "https://unpkg.com/three@0.138.0/build/three.module.js",
+					"FirstPersonControls": "https://unpkg.com/three@0.138.0/examples/jsm/controls/FirstPersonControls.js"
+				}
+			}
+		</script>
+		<script type="module">
+			var global = {gameSpeed: 1, animationSpeed: 1}
+			global.animationSpeed = global.gameSpeed * 0.01;
+			import * as THREE from 'three';
+
+			//import * as FPS from 'three/examples/jsm/controls/FirstPersonControls.js'
+
+			import { FirstPersonControls } from 'https://unpkg.com/three@0.138.0/examples/jsm/controls/FirstPersonControls.js'
+
+			import { PointerLockControls } from 'https://unpkg.com/three@0.138.0/examples/jsm/controls/PointerLockControls.js'
+			
+			//import {TWEEN} from 'three/examples/jsm/libs/tween.module.min'
+
+			const scene = new THREE.Scene();
+			const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+
+			const directionalLight = new THREE.DirectionalLight( 0xffffff, 1 );
+			directionalLight.castShadow = true; // default false
+			const light = new THREE.AmbientLight( 0x404040, 1 ); // soft white light
+			scene.add( light );
+			scene.add( directionalLight );
+
+			directionalLight.shadow.mapSize.width = 512; // default
+			directionalLight.shadow.mapSize.height = 512; // default
+			directionalLight.shadow.camera.near = 0.5; // default
+			directionalLight.shadow.camera.far = 500; // default
+
+			const renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.shadowMap.enabled = true;
+			document.body.appendChild( renderer.domElement );
+
+			const geometry = new THREE.BoxGeometry( 0.3,0.3,0.3 );
+			const material = new THREE.MeshStandardMaterial( { color: "red"} );
+			const cube = new THREE.Mesh( geometry, material );
+			cube.castShadow = true; //default is false
+			cube.receiveShadow = false; //default
+			scene.add( cube );
+
+			const geometry2 = new THREE.BoxGeometry( 1,1,1 );
+			const texture = new THREE.TextureLoader().load( "grass2.jpg" );
+			texture.wrapS = THREE.RepeatWrapping;
+			texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.set( 16, 16 );
+			const material2 = new THREE.MeshStandardMaterial( { map : texture } );
+			
+			const cube2 = new THREE.Mesh( geometry2, material2 );
+
+			cube2.receiveShadow = true;
+			scene.add( cube2 );
+
+
+			scene.background = new THREE.Color( "lightblue" );
+
+			cube2.position.y -= 2
+			cube2.scale.y = 0.2
+			cube2.scale.x = 10
+			cube2.scale.z = 10
+
+			var objheight = 0.1
+			var up = false
+
+			var player = {height: 0.9, width: 0.3, thicc: 0.3, pickUpRange: 1}
+			var location = "file:///C:/wamp64/www/php/MINECRAFT/"
+			var mouse = {x: 0, y: 0}
+			var gravity = 0.01
+			var acc = 0
+
+			camera.position.x = 0;
+			camera.position.z = 3;
+			camera.position.y = 5;
+			var x = 0;
+
+			var iconNodeId = 0;
+
+
+			var controls = new PointerLockControls(camera, document.body)
+            const blocker = document.getElementById('blocker')
+            const instructions = document.getElementById('instructions')
+            instructions.addEventListener('click', function () {
+               controls.lock()
+            })
+            controls.addEventListener('lock', function () {
+               instructions.style.display = 'none'
+               blocker.style.display = 'none'
+            })
+            controls.addEventListener('unlock', function () {
+               blocker.style.display = 'block'
+               instructions.style.display = ''
+            })
+            scene.add(controls.getObject())
+
+			//raycaster = new THREE.Raycaster(new THREE.Vector3(), new THREE.Vector3(0, -1, 0), 0, 10)
+			
+
+			
+			function animate() {
+				requestAnimationFrame( animate );
+
+				cube.rotation.y += 1 * global.animationSpeed
+	
+
+				if (camera.position.y - player.height <= cube2.position.y + 0.5 && camera.position.y - player.height >= cube2.position.y   && camera.position.z < cube2.position.z+(cube2.scale.z/2) && camera.position.z > cube2.position.z-(cube2.scale.z/2) && camera.position.x < cube2.position.x+(cube2.scale.x/2) && camera.position.x > cube2.position.x-(cube2.scale.x/2)) {
+					acc = 0
+					camera.position.y = cube2.position.y + (cube2.scale.y / 2) + player.height
+				} else {
+				}
+				camera.position.y -= acc
+				acc += gravity
+
+				//Løkke som går igjennom hver gjenstand i verdenen
+				for(var i in itemsInWorld)
+				{
+					//console.log(camera.position, player.height, itemsInWorld[i].cube.position)
+					//Sjekker kollisjoner på Y aksen --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+					if (camera.position.y >= itemsInWorld[i].cube.position.y - (itemsInWorld[i].cube.scale.y / (4 / player.pickUpRange)) && camera.position.y <= itemsInWorld[i].cube.position.y + (itemsInWorld[i].cube.scale.y / (4 / player.pickUpRange)))
+					{
+						//Sjekker kollisjoner på X aksen----------------------------------------------------------------------------------------------------------------------------------------------------------
+						if (camera.position.x >= itemsInWorld[i].cube.position.x - (itemsInWorld[i].cube.scale.x / (4 / player.pickUpRange)) && camera.position.x <= itemsInWorld[i].cube.position.x + (itemsInWorld[i].cube.scale.x / (4 / player.pickUpRange)))
+						{
+							//Sjekker kollisjoner på Z aksen------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+							if (camera.position.z >= itemsInWorld[i].cube.position.z - (itemsInWorld[i].cube.scale.z / (4 / player.pickUpRange)) && camera.position.z <= itemsInWorld[i].cube.position.z + (itemsInWorld[i].cube.scale.z / (4 / player.pickUpRange))) 
+							{
+								//dersom det oppstår en kollisjon, kjører "pickUp" metoden for objektet.
+								itemsInWorld[i].pickUp();
+							}
+						}
+					} 
+					//(itemsInWorld[i].cube.position.x >= camera.position.x - player.width && itemsInWorld[i].cube.position.x <= camera.position.x) || (itemsInWorld[i].cube.position.x + (itemsInWorld[i].cube.scale.x / 2) >= camera.position.x && itemsInWorld[i].cube.position.x + (itemsInWorld[i].cube.scale.x / 2) <= camera.position.x - player.width) || (itemsInWorld[i].cube.position.x - (itemsInWorld[i].cube.scale.x / 2) <= camera.position.x && itemsInWorld[i].cube.position.x - (itemsInWorld[i].cube.scale.x / 2) >= (camera.position.x - player.width))
+					//(itemsInWorld[i].cube.position.y >= camera.position.y - player.height && itemsInWorld[i].cube.position.y <= camera.position.y) || (itemsInWorld[i].cube.position.y + (itemsInWorld[i].cube.scale.y / 2) >= camera.position.y && itemsInWorld[i].cube.position.y + (itemsInWorld[i].cube.scale.y / 2) <= camera.position.y - player.height) || (itemsInWorld[i].cube.position.y - (itemsInWorld[i].cube.scale.y / 2) <= camera.position.y && itemsInWorld[i].cube.position.y - (itemsInWorld[i].cube.scale.y / 2) >= (camera.position.y - player.height))
+					//(itemsInWorld[i].cube.position.z >= camera.position.z - player.thicc && itemsInWorld[i].cube.position.z <= camera.position.z) || (itemsInWorld[i].cube.position.z + (itemsInWorld[i].cube.scale.z / 2) >= camera.position.z && itemsInWorld[i].cube.position.z + (itemsInWorld[i].cube.scale.z / 2) <= camera.position.z - player.thicc) || (itemsInWorld[i].cube.position.z - (itemsInWorld[i].cube.scale.z / 2) <= camera.position.z && itemsInWorld[i].cube.position.z - (itemsInWorld[i].cube.scale.z / 2) >= (camera.position.z - player.thicc))
+				}
+				
+			function jump2(){
+				console.log(item1.cube.position, "CamPosition: ", camera.position.x, camera.position.y, camera.position.z, "PlayerHeight: ", player.height)
+			}
+				
+		
+				document.getElementById('x').innerHTML = (camera.position.x ).toFixed(1)
+				document.getElementById('y').innerHTML = (camera.position.y ).toFixed(1)
+				document.getElementById('z').innerHTML = (camera.position.z ).toFixed(1)
+				document.getElementById('acc').innerHTML = acc
+				renderer.render(scene, camera );
+			}
+
+				//Variabler som brukes i inventar kalkulasjoner
+				var inventoryVars = { hotBarInventoryMax: 10, inventoryMax: 26, itemId: 0}
+				//Array som viser til hotbaren som vises hele tiden i spillet
+				var hotBarInventory = [];
+				//Array som er den større delen av inventaret.
+				var inventory = [];
+				//Array som er alle itemsene som eksisterer fysisk i verdenen.
+				var itemsInWorld = [];
+
+
+				//Klasse som er for itemsene, inkluderer relevante properties og metoder.
+				class inWorldItem {
+					//constructoren som brukes for å gi riktige attributter for itemet.
+					constructor(x, y, z, meshColor, texture, name) {
+						//ID-en til gjenstanden. Økes i takt med itemID attributtet til objektet inventoryVars
+						this.id = inventoryVars.itemId + 1;
+						//Tilegner navn til objektet.
+						this.name = name;
+						//Øker itemId attributtet
+						inventoryVars.itemId ++;
+						//Angir en arrayID, som er hvor i arrayen det abstrakte objektet skal ligge
+						this.arrayID = itemsInWorld.length;
+						//angir en farge på det fysiske objektet
+						this.meshColor = new THREE.MeshStandardMaterial({ color: meshColor });
+						//angir også en tekstur
+						this.texture = texture;
+						//angir en størrelse
+						this.geometry = new THREE.BoxGeometry(1 / 5, 1 / 5, 1 / 5);
+						//angir til slutt en "mesh"
+						this.cube = new THREE.Mesh(this.geometry, this.meshColor);
+						//gir det fysiske objektet muligheten til å gi fra seg og motta skygger.
+						this.cube.castShadow = true;
+						this.cube.receiveShadow = true;
+						
+						//Angir en position, og gir objektet en fysisk form.
+						this.cube.position.x = x;
+						this.cube.position.y = y;
+						this.cube.position.z = z;
+						scene.add(this.cube);
+						//Legger til boksen i en array som brukes for å sjekke kollisjoner
+						itemsInWorld[this.arrayID] = this;
+						/*itemsInWorld[this.arrayID] =
+						{
+							id: itemsInWorld.length,
+							position: 
+							{
+								x: x,
+								y: y,
+								z: z,
+							},
+							scale:
+							{
+								x: 1,
+								y: 1,
+								z: 1,
+							},
+							pickUp(){this.pickUp},
+							
+						}*/
+						//Går inn i animasjons-metoden til objektet.
+						this.animate();
+
+
+
+					}
+					//Metode for når gjenstanden blir plukket opp.
+					pickUp() {
+						
+						//console.log(hotBarInventory)
+						//Angir en forelder som skal være der hvor gjenstanden blir plassert i inventaret.
+						let parentDiv = "hotBarBox0"
+						var hasParent = false;
+						//Kjører en løkke som går igjennom hver DIV, og sjekker om det allerede ligger en gjenstand der.
+						for(let x = 0; x <= 9; x++)
+						{
+							//Tilegner forelderen til en konstant forandrende div
+							parentDiv = "hotBarBox" + x;
+							//Sjekker om diven ikke inneholder en gjenstand
+							if(document.getElementById(parentDiv).children.length < 2)
+							{ 
+								//Dersom DIV-en ikke inneholder en gjenstand, fjernes den abstrakte gjenstanden med den posisjonen i arrayen, og tilegner en ny arrayID for denne gjenstanden.
+								//Dette vil altså sørge for at denne abstrakte gjenstanden får en arrayID som ikke er i konflikt med inventaret.
+								hotBarInventory.splice(x, 1);
+								//console.log("Position: " + (x + 1))
+								this.parent = parentDiv;
+								console.log(this.parent)
+								this.arrayID = x;
+								x = 9;
+							}
+							//Sjekker om diven HAR en gjenstand i seg
+							else
+							{
+								//Går igjennom en liste over alle ulike gjenstander
+								for(let i = 0; i<objList.length; i++)
+								{
+									//Sjekker i hver div om de har et bilde med en src som passer et av objektene.
+									if(document.getElementById(parentDiv).children[1].currentSrc == location + objList[i].texture)
+									{
+										//Dersom det er sant, skriver den ut hviklet objekt det er 
+										console.log(objList[i].name)
+									}
+								}
+								
+							}
+
+
+						}
+						
+						//Angir en forelder som skal være der hvor gjenstanden blir plassert i inventaret.
+						let parentDiv2 = "inventoryBox0"
+
+						//Kjører en løkke som går igjennom hver DIV i inventaret, og sjekker om det allerede ligger en gjenstand der.
+						for (let x = 0; x <= 26; x++) 
+						{
+							//Tilegner forelderen til en konstant forandrende div
+							parentDiv = "inventoryBox" + x;
+							//Sjekker om diven ikke inneholder en gjenstand
+							if (document.getElementById(parentDiv).children.length < 1) {
+								//Dersom DIV-en ikke inneholder en gjenstand, fjernes den abstrakte gjenstanden med den posisjonen i arrayen, og tilegner en ny arrayID for denne gjenstanden.
+								//Dette vil altså sørge for at denne abstrakte gjenstanden får en arrayID som ikke er i konflikt med inventaret.
+								hotBarInventory.splice(x, 1)
+								
+								//console.log("Position:" + (x2 + 1));
+								this.arrayID2 = x;
+								//Slutter løkken ved å angi telleren til det høyeste.
+								x = 26;
+							}
+							
+
+
+
+							//Sjekker om diven HAR en gjenstand i seg
+							else 
+							{	
+								//Går igjennom en liste over alle ulike gjenstander
+								for (let i = 0; i < objList.length; i++) 
+								{
+									//Sjekker i hver div om de har et bilde med en src som passer et av objektene.
+									if (document.getElementById(parentDiv).children[0].currentSrc == location + objList[i].texture) 
+									{
+										//Dersom det er sant, skriver den ut hviklet objekt det er 
+										console.log(objList[i].name)
+									}
+								}
+							}
+						}
+									
+						/*let x = 0;
+						while (document.getElementById(parentDiv).children.length > 1 && x <= 8) {
+							console.log(x);
+							hotBarInventory[x] = this;
+							console.log(hotBarInventory)
+							//if div does not include image
+							if (document.getElementById(parentDiv).children.length < 1) {
+								hotBarInventory.splice(x + 1, 1);
+								//hotBarInventory[x] = this;
+								
+							}
+							else {
+								//hotBarInventory.splice(x, 1);
+							}
+							x++;
+							parentDiv = "hotBarBox" + x;
+
+							// document.getElementById(parentDiv).firstChild.nextSibling;
+						}*/
+						/*if(hotBarInventory.includes(this) || inventory.includes(this))
+						{
+							console.log("Inventory full!");
+						}
+						
+						else
+						{*/
+							//Sjekker om boksen som skal brukes har et eller mindre "barn"
+							if (document.getElementById("hotBarBox" + this.arrayID).children.length <= 1) 
+							{
+								//Sjekker om boksen har mer enn 1 barn
+								if(document.getElementById("hotBarBox" + this.arrayID).children.length > 1)
+								{
+									//Går ut av metoden.
+									return;
+								}
+								//Lager et "img" element i dokumentet, som også er en av objektets verdier.
+								this.iconNode = document.createElement("img");
+								//Tilegner en src til img elementet, som er den angitte teksturen
+								this.iconNode.src = this.texture;
+								//Gjør elementet mulig å dra.
+								this.iconNode.draggable = true;
+								//Tilegner en klasse til elementet
+								this.iconNode.classList.add("inventoryIcon");
+								//Tilegner en funksjon som skal kjøres når elementes dras
+								this.iconNode.ondragstart = drag;
+								//Tilegner en ID til elementet
+								this.iconNode.id = iconNodeId;
+								//inkrementerer ID-en
+								iconNodeId++;
+								//Lager en lokal variabel som er elementet
+								let iconNode = this.iconNode;
+								//Sjekker hvilket element som "iconNode" skal plasseres i
+								parentDiv = "hotBarBox" + this.arrayID;
+								//Tilegner dette elementet som et barn til forelder diven
+								document.getElementById(parentDiv).appendChild(this.iconNode)
+								//Gjør img elementet synlig
+								this.iconNode.style.display = "block";
+								//Legger elemenet i "hotBarInventory" arrayen.
+								hotBarInventory.push(this);
+								//Sletter objektet fra verdenen.
+								this.deleteFromWorld();
+
+							}
+							//Sjekker om inventarboksen som tilegnes har mindre enn et barn.
+							else if (document.getElementById("inventoryBox" + this.arrayID2).children.length < 1) {
+								//Gjør samme prosedyre som andre if statement
+								this.iconNode = document.createElement("img");
+								this.iconNode.src = this.texture;
+								this.iconNode.draggable = true;
+								this.iconNode.classList.add("inventoryIcon");
+								this.iconNode.ondragstart = drag;
+								this.iconNode.id = iconNodeId;
+								iconNodeId++;
+								let iconNode = this.iconNode;
+								let parentDiv = "inventoryBox0"
+								parentDiv = "inventoryBox" + this.arrayID2;
+								document.getElementById(parentDiv).appendChild(this.iconNode)
+								this.iconNode.style.display = "block";
+								inventory.push(this);
+								
+								this.deleteFromWorld();
+
+							}
+							else {
+								console.log("Inventory Full!");
+								return;
+							}
+					
+						//}
+
+						
+					}
+					
+					//Funksjon for å animere itemet.
+					animate() {
+
+						this.cube.rotation.y += 1 * global.animationSpeed;
+						requestAnimationFrame(this.animate.bind(this));
+
+					}
+					//Funksjon som fjerner kuben fra verdenen.
+					deleteFromWorld() {
+						this.cube.clear()
+						this.cube.removeFromParent()
+						for(let i = 0; i < itemsInWorld.length; i++)
+						{
+							itemsInWorld[i].array2ID = parseInt(i);
+						}
+						itemsInWorld.splice(this.array2ID, 1);
+						
+					}
+
+					drop()
+					{
+
+						if(hotBarInventory.includes(this))
+						{
+							hotBarInventory.splice(this.arrayID, 1);
+							this.spawn(hotBarInventory);
+						}
+						else if(inventory.includes(this))
+						{
+							inventory.splice(this.arrayID, 1);
+							this.spawn(inventory);
+						}
+					}
+					spawn(div)
+					{
+								
+						document.getElementById(div).removeChild(this.iconNode)
+						//document.getElementById(rightElement).style.display = "none";
+						scene.add(this.cube);
+						itemsInWorld.push(this);
+						this.itemId = itemsInWorld.length;
+						this.animate();
+					}
+
+				}
+
+			/*class inventoryItem {
+				constructor(inventoryPosition, image, inWorldItem) {
+					this.inventoryPosition = inventoryPosition;
+					this.icon = texture;
+					this.inWorldItem = inWorldItem;
+				}
+			}*/
+			var item1 = new inWorldItem(0, -1, 1, "blue", "Cobblestone_29_JE5_BE3.png", "Cobblestone");
+			var item2 = new inWorldItem(1, -1, 1, "red", "wood_1.png", "Oak planks")
+			var objList = [item1, item2];
+			item1.pickUp();
+			window.onload = function () {
+				setTimeout(function () { item1.pickUp() }, 1000);
+			}
+			window.onload = function () {
+				setTimeout(function () { item1.drop() }, 2000);
+			}
+
+			document.body.onmousemove = function(e)
+			{
+				mouse.x = e.pageX;
+				mouse.y = e.pageY;
+			}
+
+
+			animate();
+			var inventoryOpen = false;
+			function inventoryFunc()
+			{
+				let inventoryDiv = document.getElementById("inventoryDiv");
+				if(!inventoryOpen)
+				{
+					controls.unlock()
+					inventoryDiv.style.display = "block";
+					inventoryOpen = true;
+				}
+				else
+				{
+					controls.lock()
+					inventoryDiv.style.display = "none";
+					inventoryOpen = false;
+				}
+			}
+			var int1
+			var int2
+			var int3
+			var int4
+
+			document.addEventListener('keydown', (event)=> 
+			{
+				if (event.repeat) return;
+				if(event.code == "KeyE")
+				{
+					inventoryFunc();
+					console.log(itemsInWorld);	
+				}
+				if (event.code == "KeyD") {
+					int1 = setInterval(move1, 1)
+				}
+				if (event.code == "KeyA") {
+					int2 = setInterval(move2, 1)
+					
+				}
+				if (event.code == "KeyS") {
+					int3 = setInterval(move3, 1)
+					
+				}
+				if (event.code == "KeyW") {
+					int4 = setInterval(move4, 1)
+					console.log(camera.position)
+					
+				} 
+				if (event.code == "Space") {
+	
+				} 
+			
+			});
+
+			//
+			document.addEventListener('keyup', (event)=> 
+			{
+				
+				if (event.code == "KeyD") {
+					clearInterval(int1)
+				}
+				if (event.code == "KeyA") {
+					clearInterval(int2)
+				}
+				if (event.code == "KeyS") {
+					clearInterval(int3)
+				}
+				if (event.code == "KeyW") {
+					clearInterval(int4)
+				}
+				if (event.code == "Space") {
+					item1.pickUp()
+				}
+				if (event.code == "keyQ")
+				{
+					item1.drop();
+				}
+			});
+
+		function move1() {
+			camera.translateX(0.02)
+		}
+		function move2() {
+			camera.translateX(-0.02)
+		}
+		function move3() {
+			camera.translateZ(0.02)
+		}
+		function move4() {
+			camera.translateZ(-0.02)
+		}
+
+		function jump1() {
+			acc += 5
+		}
+		</script>
+		<script>
+			
+			var srcEl2;
+			var srcEl3;
+			function drag(e) 
+			{
+				//console.log(e)
+				//e.style.display = "none";
+				srcEl2 = e.target;
+				e.dataTransfer.setData("srcEl", e.target);
+				e.dataTransfer.setData("id", e.target.id);
+				console.log(e);
+				//draggedEl = e;
+			}
+			function allowDrop(e) 
+			{
+				e.preventDefault();
+			}
+			function drop(e) 
+			{
+				e.preventDefault()
+				let srcEl = e.dataTransfer.getData("srcEl");
+				let srcEl3 = e.target
+				let targetId = e.target.id
+				let elId = e.dataTransfer.getData("id");
+				console.log(e);
+				const strId = targetId.slice(0,1)
+				console.log(strId);
+				if((strId == "i" && document.getElementById(targetId).children.length < 1) || (strId =="h" && document.getElementById(targetId).children.length < 2))
+				{
+					
+						document.getElementById(targetId).appendChild(srcEl2);
+				}
+				if(document.getElementById(targetId).tagName == "IMG")
+				{
+					let parent1 = document.getElementById(srcEl2.id).parentElement;
+					let parent2 = document.getElementById(targetId).parentElement;
+					parent1.appendChild(srcEl3);
+					parent2.appendChild(srcEl2)
+				}
+				/*for(var i = 0; i<27; i++)
+				{*/
+					/*if(e.target.firstChild)
+					{
+						if(e.target.firstChild.nextSibling)
+						{
+							document.getElementById(targetId).firstChild.nextSibling.src = elSrc;
+							console.log(document.getElementById(targetId).firstChild.nextSibling)
+						}
+					}
+					if(e.target.firstChild)
+					{
+						if(e.target.firstChild.nextSibling)
+						{
+							if (!window.getComputedStyle(e.target.firstChild.nextSibling)/*.display == "none") 
+							{
+								//document.getElementById(elId).style.display = "none";
+								e.target.appendChild(document.getElementById(elId))
+							}
+							else if(window.getComputedStyle(e.target.firstChild.nextSibling).display == "none")
+							{
+								e.target.appendChild(document.getElementById(elId))
+							}
+						}*/
+					//}
+				//}
+			}
+		</script>
+		<h1 style="color: white; position: absolute;" id="x"></h1>
+		<h1 style="color: white; position: absolute; top: 30px;" id="y"></h1>
+		<h1 style="color: white; position: absolute; top: 60px;" id="z"></h1>
+		<h1 style="color: white; position: absolute; top: 120px;" id="acc"></h1>
+
+		<div id ="inventoryDiv">
+			<div id="inventoryGrid">
+				<div class="inventoryBox" id="inventoryBox0" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox1" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox2" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox3" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox4" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox5" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox6" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox7" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox8" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox9" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox10" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox11" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox12" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox13" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox14" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox15" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox16" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox17" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox18" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox19" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox20" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox21" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox22" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox23" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox24" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox25" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+				<div class="inventoryBox" id="inventoryBox26" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<!--<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="inventoryIcon0" alt="" />-->
+				</div>
+			</div>
+		</div>
+
+		<ul id="InventoryHotbar">
+			<li>
+				<div class="inventoryBox" id="hotBarBox0" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon0"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox1" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon1"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox2" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon2"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox3" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon3"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox4" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon4"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox5" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon5"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox6" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon6"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox7" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon7"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox8" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon8"alt="" />
+				</div>
+			</li>
+			<li>
+				<div class="inventoryBox" id="hotBarBox9" ondrop ="drop(event)" ondragover ="allowDrop(event)">
+					<img class="inventoryIcon" draggable="true" ondragstart="drag(event)" src="" id="hotBarIcon9"alt="" />
+				</div>
+			</li>
+		</ul>
+	</body>
+</html>
