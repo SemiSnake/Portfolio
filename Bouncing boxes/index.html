@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image in canvas</title>
+</head>
+
+<body>
+
+    <canvas style="height: 600px; width: 600px; border: 5px solid black;" id="canvas1"></canvas>
+    <h1>Poeng: <span id ="points">0</span></h1>
+    <div style = "position: absolute; left: 650px; top: 0px">
+    <h1>Veiledning:</h1>
+    <p style = "font-size: 20px;">I dette spillet styrer du den blå boksen med WASD eller piltastene.
+        <br>
+        Målet med spillet er å få så mange poeng som mulig. Når du treffer en av de grønne boksene får du ett poeng, og når
+        <br>
+        du treffer en rød boks mister du ett poeng. Boksene forsvinner etter en stund, og livstiden står over de. Trykk på
+        mellomrom 
+        <br>
+        tasten når du er klar! Denne tasten kan senere brukes for å pause spillet om du vil lagre poengsummen din.</p>
+        Navn: <input type ="text" id ="nameInput"></input>
+        <button id="saveButton">Lagre</button>
+        <h1>High score: <span id ="highScore">0</span></h1>
+        <h2>Vil du øke vanskelighetsgraden? Her kan du endre spillets hastighet (fra 1 til 5 ganger så fort):</h2>
+        <input type ="range" id ="gameSpeedInput"></input>
+    </div>
+
+</body>
+<script>
+    var enemyList = [];
+    var points = 0;
+    var name = "";
+    var gameSpeed = 0;
+    var yAxisCompensation = 0.5;
+    var xAxisCompensation = 1;
+    var neutralList = [];
+    var player = {x: 10, y: 10, xSpeed: 0 * gameSpeed * xAxisCompensation, ySpeed: 0 * gameSpeed * yAxisCompensation, nativeXSpeed: 0.6 * xAxisCompensation, nativeYSpeed: 0.6 * yAxisCompensation, width: 20 * xAxisCompensation, height: 20 * yAxisCompensation, color: "blue", targets: [enemyList, neutralList]}
+    var friendList = [];
+    var playerList = [player];
+    var entityList = [enemyList, friendList, neutralList];
+    var globId = 0;
+    var img = document.getElementById("flower1");
+    var img2 = document.getElementById("flower2");
+    var cv = document.getElementById("canvas1");
+    var ctx = cv.getContext("2d");
+    var entityState = { hostile: "hostile", friendly: "friendly", neutral: "neutral" }
+    window.onload = function () {
+        if(localStorage.testJSON === undefined)
+        {
+            var myObj={name:"Noname", score: 0};
+            var myJSON = JSON.stringify(myObj);
+            localStorage.setItem("testJSON", myJSON)
+        }
+        else
+        {
+            savePoints();
+        }
+        document.getElementById("saveButton").onclick = savePoints;
+        document.getElementById("gameSpeedInput").max = 5;
+        document.getElementById("gameSpeedInput").min = 1;
+        document.getElementById("gameSpeedInput").onchange = function(){
+            gameSpeed = document.getElementById("gameSpeedInput").value;
+        }
+    }
+    function savePoints()
+    {
+        console.log("hei");
+        let text = localStorage.getItem("testJSON");
+        let obj = JSON.parse(text);
+        
+        if(points < obj.score)
+        {
+            document.getElementById("highScore").innerHTML = obj.name + ": " + obj.score;
+        }
+        else if(points >= obj.score)
+        {
+            let navn = document.getElementById("nameInput").value;
+            var myObj = {name: navn, score:Math.floor(points)};
+            var myJSON = JSON.stringify(myObj);
+            localStorage.setItem("testJSON", myJSON);
+            document.getElementById("highScore").innerHTML = myObj.name +": " + myObj.score;
+        }
+    }
+    function newEntity(x, y, xSpeed, Yspeed, width, height, state, form) {
+        var thisId = globId;
+        if (state == entityState.hostile) {
+            thisId = enemyList.length;
+        }
+        else if (state == entityState.friendly) {
+            thisId = friendList.length;
+        }
+        else {
+            thisId = neutralList.length;
+        }
+        var thisEntity =
+        {
+            id: thisId,
+            x: x,
+            y: y,
+            xSpeed: xSpeed * xAxisCompensation,
+            ySpeed: Yspeed * yAxisCompensation,
+            width: width * xAxisCompensation,
+            height: height * yAxisCompensation,
+            state: state,
+            color: NaN,
+            targets: NaN,
+            lifeSpan: Math.round(Math.random() * (10000 - 5000) + 5000),
+        }
+        if (thisEntity.state == entityState.hostile) {
+
+            enemyList[enemyList.length] = thisEntity;
+            thisEntity.color = "red";
+            thisEntity.targets = [friendList, neutralList, playerList];
+
+        }
+        else if (thisEntity.state == entityState.friendly) {
+
+            friendList[friendList.length] = thisEntity;
+            thisEntity.color = "teal";
+            thisEntity.targets = [enemyList, neutralList];
+        }
+        else {
+            neutralList[neutralList.length] = thisEntity;
+            thisEntity.color = "grey";
+            thisEntity.targets = [enemyList, friendList, neutralList];
+        }
+        globId++;
+        var lifeSpan = Math.round(Math.random() * (10000 - 5000) + 5000) 
+        setInterval((function()
+        {thisEntity.lifeSpan -= 10 * gameSpeed}
+        ), 10)
+    }
+    var spawnTimerMs = 1000;
+    setInterval((function()
+    {
+        spawnTimerMs -= 10 * gameSpeed;
+        if(spawnTimerMs <= 0)
+        {
+            newRandomEntity();
+            spawnTimerMs = Math.round(Math.random() * (5000 - 1000) + 1000);
+        }
+        
+    }), 10)
+    newEntity(100, 20, 0.5, 0.6, 20, 20, entityState.friendly);
+    //newEntity(10, 1, 0.6, 0.5, 20, 20, entityState.hostile);
+    //newEntity(10,5, 1, 2, 30, 10, entityState.neutral);
+
+    function newRandomEntity() 
+    {
+        var thisHostilityState;
+        var hostilityStatenum = Math.round(Math.random() * 1  + 1);
+        if(hostilityStatenum == 1)
+        {
+            thisHostilityState = entityState.hostile;
+        } 
+        else if(hostilityStatenum == 2)
+        {
+            thisHostilityState = entityState.friendly;
+        }
+        else
+        {
+            thisHostilityState = entityState.friendly;
+        }
+    
+
+        newEntity(Math.random() * (240 - 1) + 1, Math.random() * (90 - 1) + 1, Math.random(0.1, 1) * (1 - 0.1) + 0.1, Math.random(0.1, 1) * (1 - 0.1) + 0.1, Math.random(10, 50) * (50 - 10) + 10, Math.random(10,50) * (50 - 10) + 10, thisHostilityState);
+    }
+
+    var keycodes = { left: 65, right: 68, up: 87, down: 83, shift: 16, left2: 37, right2: 39, up2: 38, down2: 40, space: 32};
+
+    document.onkeydown = function (event) {
+        var code = event.keyCode;
+        if (code == keycodes.left || code == keycodes.left2 /*&& player.x > cv.width*/) 
+        {
+            player.xSpeed = (-player.nativeXSpeed)  * gameSpeed
+        }
+        else if (code == keycodes.right || code == keycodes.right2 /*&& player.x <= cv.width - (player.width)/*&& player.x < cv.width - player.width*/) {
+            player.xSpeed = (Math.abs(player.nativeXSpeed)) * gameSpeed;
+        }
+        else if (code == keycodes.down || code == keycodes.down2 /*&& player.y < cv.height - player.height*/) {
+            player.ySpeed = (Math.abs(player.nativeYSpeed))  * gameSpeed;
+        }
+        else if (code == keycodes.up || code == keycodes.up2 /*&& player.y > cv.height*/) {
+            player.ySpeed = (-player.nativeYSpeed)  * gameSpeed;//-Math.abs(player.nativeYSpeed);
+        
+        }
+        else if(code == keycodes.space)
+        {
+            
+            if(gameSpeed != 0)
+            {
+                gameSpeed = 0;
+            }
+            else
+            {
+                gameSpeed = document.getElementById("gameSpeedInput").value;
+            }
+        
+            player.xSpeed = 0;
+            player.ySpeed = 0;
+        }
+        /**/
+
+    }
+    document.onkeyup = function (event) 
+    {
+        var code = event.keyCode;
+        /*if (code == keycodes.left || code == keycodes.left2 || code == keycodes.right || code == keycodes.right2)
+        {
+            player.xSpeed = 0;
+        }
+        else if (code == keycodes.up || code == keycodes.up2 || code == keycodes.down || code == keycodes.down2) 
+        {
+            player.ySpeed = 0;
+        }
+        */
+        if (code == keycodes.left || code == keycodes.left2) {
+            player.xSpeed += (player.nativeXSpeed) * gameSpeed
+        }
+        else if (code == keycodes.right || code == keycodes.right2)
+        {
+            player.xSpeed += (-player.nativeXSpeed) * gameSpeed
+        }
+        else if (code == keycodes.up || code == keycodes.up2) {
+            player.ySpeed += (player.nativeYSpeed) * gameSpeed;
+        }
+        else if(code == keycodes.down || code == keycodes.down2)
+        {
+            player.ySpeed += (-player.nativeYSpeed) * gameSpeed;
+        }
+            /*else if (code == keycodes.shift) {
+                if (player.xSpeed == 0 && player.ySpeed == 0) 
+                {
+
+                    player.xSpeed = player.nativeXSpeed;
+                    player.ySpeed = player.nativeYSpeed;
+                }
+                else {
+                    player.nativeXSpeed = player.xSpeed;
+                    player.nativeYSpeed = player.ySpeed;
+                    player.xSpeed = 0;
+                    player.ySpeed = 0;
+                }
+            }*/
+
+            //player.x = player.x + player.xSpeed
+     }
+    function updateAll() {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        ctx.beginPath();
+        
+        ctx.fillStyle = player.color;
+        ctx.fillRect(player.x, player.y, player.width, player.height);
+        
+        ctx.stroke();
+
+        if (player.x + player.xSpeed * gameSpeed <= cv.width - (player.width) && player.x + player.xSpeed * gameSpeed >= 0) {
+            player.x += player.xSpeed * gameSpeed;
+
+        }
+        if (player.y + player.ySpeed * gameSpeed <= cv.height - (player.height) && player.y + player.ySpeed * gameSpeed >= 0) {
+            player.y += player.ySpeed * gameSpeed;
+           
+           
+        }
+        for(key in entityList)
+        {
+        
+            for(i in entityList[key])
+            {
+                var thisEl = entityList[key][i];
+                ctx.beginPath();
+                ctx.fillStyle = thisEl.color;
+                ctx.font = "10px serif"
+                if(thisEl.lifeSpan <= 0)
+                {
+                    remove(thisEl)
+                }
+                else
+                {
+                    ctx.fillText(parseFloat(thisEl.lifeSpan / 1000).toFixed(1), thisEl.x, thisEl.y - 3);
+                    ctx.fillRect(thisEl.x, thisEl.y, thisEl.width, thisEl.height);
+                    ctx.stroke();
+                    //ctx.rect(thisEl.x, thisEl.y, imgWidth, imgHeight); 
+                    if (thisEl.x >= cv.width - thisEl.width || thisEl.x <= 0) {
+                        thisEl.xSpeed *= -1;
+                    }
+                    if (thisEl.y >= cv.height - thisEl.height || thisEl.y <= 0) {
+                        thisEl.ySpeed *= -1;
+                    }
+                    thisEl.x += thisEl.xSpeed * gameSpeed;
+                    thisEl.y += thisEl.ySpeed * gameSpeed;
+                    checkCollision(thisEl);
+                }
+                
+
+            }
+        }
+        window.requestAnimationFrame(updateAll);
+    }
+    function checkCollision(entity1)
+    {
+        var thisRightX = entity1.x + entity1.width;
+        var thisDownY = entity1.y + entity1.height;
+        var targetRightX = player.x + player.width;
+        var targetDownY = player.y + player.height;
+        //console.log("Y values: " + entity1.y + " " + thisDownY + "Target X values: " + targetEl.y + " " + targetDownY);
+        if (((player.x >= entity1.x || targetRightX >= entity1.x) && (player.x < thisRightX || targetRightX <= thisRightX)) && (player.y >= entity1.y || targetDownY >= entity1.y) && (player.y <= thisDownY || targetDownY <= thisDownY)) 
+        {
+            if(entity1.state == entityState.hostile)
+            {
+                points--;
+            }
+            else
+            {
+                points++;
+            }
+            remove(entity1);
+            document.getElementById("points").innerHTML = points;
+        }
+        /*for(j in entity2)
+        {
+            for(z in entity2[key])
+            {
+                var targetEl = player;
+                var thisRightX = entity1.x + entity1.width;
+                var thisDownY = entity1.y + entity1.height;
+                var targetRightX = targetEl.x + targetEl.width;
+                var targetDownY = targetEl.y + targetEl.width;
+                if (targetEl.x || targetRightX >= entity1.x && targetEl.x || targetRightX <= thisRightX) 
+                {
+                    console.log("X collision");
+                }
+            }
+        }*/
+
+    }
+updateAll();
+function remove(entity)
+{
+    if(entity.state == entityState.hostile)
+    {
+        enemyList.splice(entity.id, 1);
+        for (m in enemyList) {
+            enemyList[m].id = m;
+        }
+    }
+    else
+    {
+        friendList.splice(entity.id, 1);
+        for(m in friendList)
+        {
+            friendList[m].id = m;
+        }
+    }
+    /*for(k in entityList)
+    {
+        for(l in entityList[k])
+        {
+            if(entityList[k][l] == entity)
+            {
+                entityList[k].splice(entity.id, 1);
+            }
+        }
+    }*/
+}
+
+</script>
+
+</html>
