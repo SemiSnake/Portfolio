@@ -1,0 +1,2 @@
+<div name = "message" id = "message"><p><?php echo $_SESSION["message"] ?></p></div>
+<?php //if(isset($_SESSION["sent"])){if($_SESSION["sent"] == true){$_SESSION["sent"] = false; $_SESSION["message"] = ""; }}?>

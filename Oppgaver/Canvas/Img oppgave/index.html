@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image in canvas</title>
+</head>
+<body>
+    <h1>Bilde template:</h1>
+    <img src = "blomst2.png" alt ="blomst" id ="flower1" style ="width: 500px; height: auto;"/><br>
+    <canvas style ="height: 500px; width: 500px; border: 5px solid black;" id ="canvas1"></canvas>
+</body>
+<script>
+    var enemyList = [];
+    var friendList = [];
+    var neutralList = [];
+    var playerList = [];
+    var entityList = [enemyList, friendList, neutralList];
+    var x = 10;
+    var y = 10;
+    var nativeXSpeed;
+    var nativeYSpeed;
+    var xSpeed = 0.6;
+    var ySpeed = 0.6;
+    var imgWidth = 80;
+    var imgHeight = 40;
+    var img = document.getElementById("flower1");
+    var cv = document.getElementById("canvas1");
+    var ctx = cv.getContext("2d");
+    var entityState = {hostile: "hostile", friendly: "friendly", neutral: "neutral"}
+    window.onload = function()
+    {
+        movePic();
+    }
+   
+    function newEntity(x, y, xSpeed, Yspeed, state) {
+        var thisId;
+        if (state == entityState.hostile) {
+            thisId = enemyList.length;
+           
+        }
+        else if (state == entityState.friendly) {
+            thisId = friendList.length;
+            
+        }
+        else {
+            thisId = neutralList.length;
+        }
+        var thisEntity =
+        {
+            id: thisId,
+            x: x,
+            y: y,
+            xSpeed: xSpeed,
+            ySpeed: Yspeed,
+            state: state
+        }
+        if(thisEntity.state == entityState.hostile)
+        {
+           
+            enemyList[enemyList.length] = thisEntity;
+        }
+        else if(thisEntity.state == entityState.friendly)
+        {
+          
+            friendList[friendList.length] = thisEntity;
+        }
+        else
+        {
+            
+            neutralList[neutralList.length] = thisEntity;
+        }
+        
+    }
+    newEntity(10, 10, 5, 6, entityState.friendly);
+    var keycodes = { left: 65, right: 68, up: 87, down: 83, shift: 16};
+
+    document.onkeydown = function (event) {
+        var code = event.keyCode;
+        if (code == keycodes.left && x > 0) {
+            xSpeed = Math.abs(xSpeed) * -1;
+        }
+        else if (code == keycodes.right && x < cv.width - imgWidth) {
+            xSpeed = Math.abs(xSpeed);
+        }
+        else if (code == keycodes.down && y < cv.height - imgHeight) {
+            ySpeed = Math.abs(ySpeed);
+        }
+        else if (code == keycodes.up && y > 0) {
+            ySpeed = Math.abs(ySpeed) * -1;
+        }
+        else if (code == keycodes.shift) {
+            if (xSpeed == 0 && ySpeed == 0) {
+
+                xSpeed = nativeXSpeed;
+                ySpeed = nativeYSpeed;
+            }
+            else
+            {
+                nativeXSpeed = xSpeed;
+                nativeYSpeed = ySpeed;
+                xSpeed = 0;
+                ySpeed = 0;
+            }
+        }
+
+    }
+    function movePic() {
+        ctx.clearRect(0, 0, cv.width, cv.height);
+        ctx.drawImage(img, x, y, imgWidth, imgHeight)
+        x += xSpeed;
+        y += ySpeed;
+        if (x >= cv.width - imgWidth || x <= 0) {
+            xSpeed *= -1;
+        }
+        if (y >= cv.height - imgHeight || y <= 0) {
+            ySpeed *= -1;
+        }
+
+        window.requestAnimationFrame(movePic);
+    }
+    /*setInterval(function()
+    {
+        movePic(img)
+    }
+    ,1);*/
+    function updateAll() {
+
+    }
+
+</script>
+</html>

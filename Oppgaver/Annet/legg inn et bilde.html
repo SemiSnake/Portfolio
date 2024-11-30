@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        #image1
+        {
+            display: none;
+            position: absolute;
+            right: 0;
+            height: auto;
+            width: 500px;
+            top:0;
+        }
+    </style>
+    <script>
+        window.onload = oppstart
+        function oppstart() {
+            document.getElementById("show").onclick = showpic;
+            document.getElementById("hide").onclick = hidepic;
+        }
+        function showpic() 
+        {
+            document.getElementById("image1").style.display = "block";
+        }
+        function hidepic()
+        {
+            document.getElementById("image1").style.display = "none";
+        }
+
+    </script>
+</head>
+<body>
+    <button id="show">Vis bilde</button><button id ="hide">Gjem bilde</button>
+    <h1 id="output">Trykk på start for å kalkulere!</h1>
+    <img id ="image1" src ="image1.png">
+</body>
+
+</html>

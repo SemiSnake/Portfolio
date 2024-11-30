@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=, initial-scale=1.0">
+        <title>While loops</title>
+    </head>
+        <script>
+            window.onload = start;
+            function start()
+            {
+                var i = 0;
+                var y = 0;
+                /*while(i != 50)
+                {
+                    i = Math.floor((Math.random() * 99) + 1)
+                    console.log(i)
+                }*/
+                function loop()
+                {
+                    if(y < 5)
+                    {
+                        i = Math.floor((Math.random() * 99) + 1)
+                        document.getElementById("count").innerHTML += "<br>" + i;
+                        y++
+                    }
+
+                }
+                setInterval(loop, 2000)
+            }
+        </script>
+    <body>
+        <h1>Tall fra løkken: <span id ="count"></span></h1>
+    </body>
+</html>

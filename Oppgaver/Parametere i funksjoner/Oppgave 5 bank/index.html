@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Parametere i funksjoner</title>
+        
+    </head>
+    <script>
+        var saldo = 3000;
+        var opt100;
+        var opt200;
+        var opt500;
+        var opt1000;
+        var submitEl;
+        window.onload = start;
+        function start()
+        {
+            opt100 = document.getElementById("100");
+            opt200 = document.getElementById("200");
+            opt500 = document.getElementById("500");
+            opt1000 = document.getElementById("1000");
+            submitEl = document.getElementById("submit");
+            submitEl.onclick = checkvalues;
+        }
+        function checkvalues()
+        {
+            if(opt100.checked)
+            {
+                drawsum(100);
+            }
+            else if(opt200.checked)
+            {
+                drawsum(200)
+            }
+            else if(opt500.checked)
+            {
+                drawsum(500);
+            }
+            else if(opt1000.checked)
+            {
+                drawsum(1000);
+            }
+        }
+        function drawsum(sum)
+        {
+            saldo -= sum;
+            document.getElementById("saldo").innerHTML = saldo;
+        }
+    </script>
+    <body>
+        <h1>Saldo: <span id ="saldo">3000</span></h1>
+        <input type="radio" name="value" id="100"> 100
+        <input type="radio" name="value" id="200"> 200
+        <input type="radio" name="value" id="500"> 500
+        <input type="radio" name="value" id="1000"> 1000
+        <button id ="submit">Trekk ut</button>
+    </body>
+</html>

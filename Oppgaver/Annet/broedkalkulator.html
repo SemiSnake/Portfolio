@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <title>Brød kalkulator</title>
+    <style>
+        #image1 
+        {
+            display: none;
+            position: absolute;
+            right: 0;
+            height: auto;
+            width: 500px;
+            top: 0;
+        }
+        #boxBig
+        {
+            border: 5px solid black;
+            text-align: center;
+        }
+        #ingredientsList
+        {
+            list-style: none;
+        }
+        li
+        {
+            list-style: none;
+            left:0;
+        }
+    </style>
+    <script>
+        window.onload = oppstart
+        function oppstart() {
+            document.getElementById("numPorsjons").onkeydown = calculate;
+            document.getElementById("numPorsjons").onkeyup = calculate;
+            document.getElementById("submit").onclick = check1;
+        }
+        function check1()
+        {
+            if (document.getElementById("numPorsjons").value == '') {
+                alert("vennligst legg inn et tall!!!!!!!!!!!!!");
+            }
+            else
+            {
+                calculate();
+            }
+        }
+        function calculate() 
+        {
+            document.getElementById("result").innerHTML = "Du trenger:";
+            document.getElementById("l1").innerHTML = document.getElementById("numPorsjons").value * 25 + " g";
+            document.getElementById("l2").innerHTML = document.getElementById("numPorsjons").value * 9 + " dl";
+            document.getElementById("l3").innerHTML = document.getElementById("numPorsjons").value * 500 + " g";
+            document.getElementById("l4").innerHTML = document.getElementById("numPorsjons").value * 1 + " kg";
+            document.getElementById("l5").innerHTML = document.getElementById("numPorsjons").value * 50 + " g";
+            document.getElementById("l6").innerHTML = document.getElementById("numPorsjons").value * 2 + " ts";
+            document.getElementById("l7").innerHTML = document.getElementById("numPorsjons").value * 0.5 + " ss";
+        }
+
+    </script>
+</head>
+
+<body >
+    <div id ="boxBig" class ="w3-container w3-display-middle w3-display-container">
+        <h>Ingredienser</h><br>
+        <p>Antall porsjoner:</p>
+        <div class ="w3-container">
+            <input class="w3-input" type="number" id="numPorsjons" style="width: 30%;"><br><br>
+        </div>
+        <button id="submit">Submit</button>
+        <div class ="w3-container w3-display-container">
+            <h1 id ="result"></h1>
+            <div class ="w3-display-left">
+              
+            </div>
+        </div>
+        <ul id ="ingredientslist" class ="w3-ul">
+        <li id ="l1"></li>
+        <li id ="l2"></li>
+        <li id ="l3"></li>
+        <li id ="l4"></li>
+        <li id ="l5"></li>
+        <li id ="l6"></li>
+        <li id = l7></li>
+        </ul>
+    </div>
+</body>
+
+</html>

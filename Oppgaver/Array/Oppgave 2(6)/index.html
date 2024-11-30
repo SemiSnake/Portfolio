@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Array del 2</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="css/style.css" rel="stylesheet">
+        <script>
+            window.onload = start;
+            var numbersArray = [];
+            var numbersSorted = [];
+            var numbersSortedReversed = [];
+            function start()
+            {
+                submitEl = document.getElementById("submit");
+                submitEl.onclick = insertToArray;
+                document.getElementById("sort1").onclick = sorterStigende;
+                document.getElementById("sort2").onclick = sorterSynkende;
+            }
+            function insertToArray()
+            {
+                num1 = document.getElementById("number1").value;
+                num2 = document.getElementById("number2").value;
+                num3 = document.getElementById("number3").value;
+                numbersArray.push(num1, num2, num3);
+                document.getElementById("arrayP").innerHTML = numbersArray;
+                
+            }
+            function sorterStigende()
+            {
+                numbersSorted = numbersArray;
+                numbersSorted.sort(sorteri);
+                document.getElementById("sortP1").innerHTML = numbersSorted;
+
+            }
+            function sorterSynkende()
+            {
+                numbersSortedReversed = numbersArray;
+                numbersSortedReversed.sort(sorteri);
+                numbersSortedReversed.reverse();
+                document.getElementById("sortP2").innerHTML = numbersSortedReversed;
+
+            }
+            function sorteri(x, y)
+            {
+                if(x > y)
+                {
+                    return 1;
+                }
+                else if(x < y)
+                {
+                    return -1;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+    <h1>Array sortering!</h1>
+    <h2>I denne nettsiden kan du legge til numre i en array som vil automatisk sortere disse etter verdi.</h2>
+    Tall 1: <input type="number" id ="number1">
+    <br>
+    <br>
+    Tall 2: <input type="number" id ="number2">
+    <br>
+    <br>
+    Tall 3: <input type="number" id ="number3">
+    <br>
+    <br>
+    <button id ="submit">Legg til i arrayen!</button>
+    <br>
+    <br>
+    <p>Her er arrayen uten sortering: <span id ="arrayP"></span></p>
+    <br>
+    <br>
+    <button id ="sort1">Sorter stigende!</button>
+    <br>
+    <br>
+    <p>Her ser du arrayen sortert i stigende rekkefølge!<span id ="sortP1"></span></p>
+    <br>
+    <br>
+    <button id ="sort2">Sorter synkende!</button>
+    <br>
+    <br>
+    <p>Her ser du arrayen sortert i synkende rekkefølge!<span id="sortP2"></span></p>
+    </body>
+</html>

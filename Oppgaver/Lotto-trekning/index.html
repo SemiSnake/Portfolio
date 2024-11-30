@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<script>
+    window.onload = start;
+    var correctSequence = [];
+    var currentSequence = [];
+    var numOfTries = 0;
+    var x = 0;
+    let prevNum = 0;
+    function start()
+    {
+        document.getElementById("trekk").onclick = trekk;
+        for(let i =0; i<7; i++)
+        {
+            let correctNum = Math.ceil(Math.random() * 36);
+            correctSequence[i] = correctNum;
+            for(let x = 0; x<i; x++)
+            {
+                if (correctNum == correctSequence[x]) 
+                {
+                    start();
+                }
+            }
+ 
+        }
+        correctSequence = correctSequence.sort(function(a, b) {return a - b});
+        document.getElementById("rightNum").innerHTML = correctSequence;
+    }
+    function trekk()
+    {
+        currentSequence = [];
+        numOfTries = 0;
+        //for(let i = 0; i<7; i++)
+        //{
+            while(currentSequence != correctSequence)
+            {
+                for(let i = 0; i<7; i++)
+                {
+                    currentSequence[i] = Math.ceil(Math.random() * 36);
+                    for(let x = 0; x<i; x++)
+                    {
+                        if(currentSequence[i] == currentSequence[x])
+                        {
+                            currentSequence[i] = Math.ceil(Math.random() * 36);
+                        }
+                    }
+                } 
+                currentSequence = currentSequence.sort(function (a, b) { return a - b });
+                if(currentSequence[0] == correctSequence[0] && currentSequence[1] == correctSequence[1] && currentSequence[2] == correctSequence[2] && currentSequence[3] == correctSequence[3] && currentSequence[4] == correctSequence[4] && currentSequence[5] == correctSequence[5] && currentSequence[6] == correctSequence[6])
+                {
+                    currentSequence = correctSequence;
+                }
+               numOfTries ++;
+            }
+        //}
+        console.log(currentSequence);
+        document.getElementById("numOfTries").innerHTML = "Det tok " + numOfTries + " forsøk for å trekke de samme tallene!";
+    }
+</script>
+<body>
+    <h1 id ="rightNum"></h1><br><br>
+    <button id ="trekk">Trekk</button><br><br>
+    <h1 id ="numOfTries"></h1>
+    <h1 id = "yay"></h1>
+</body>
+</html>

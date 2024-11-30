@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet">
+    <title>BB BMI kalkulator</title>
+    <style>
+        *
+        {
+            font-family: 'Poppins', sans-serif;
+            
+        }
+        #image1 
+        {
+            display: none;
+            position: absolute;
+            left: 40px;
+            margin-top: 200px;
+            height: auto;
+            width: 80px;
+            top: 0;
+        }
+
+        #boxBig 
+        {
+            border: 5px solid black;
+            text-align: left;
+            width: 400px;
+            height: 300px;
+            background-color: red;
+            color: white;
+        }
+
+        h1
+        {
+            font-size: 35px;
+            margin-left: 70px;
+        }
+        p
+        {
+            font-size: 20px;
+            margin-left: 30px;
+        }
+        p2
+        {
+            position: absolute;
+            font-size: 10px;
+            margin-top: 80px;
+            font-weight: 700;
+            left: 20px;
+        }
+        #submit
+        {
+            position: absolute; 
+            margin-left: 174px
+        }
+        #heightInput
+        {
+            position: absolute; 
+            width: 160px; 
+            margin-left: 20px;
+        }
+        #weightInput
+        {
+            position: absolute; 
+            width: 160px; 
+            margin-left: 50px;
+        }
+        #BMI-message
+        {
+            display: none;
+        }
+        #message
+        {
+            position: absolute;
+            left: 155px;
+            margin-top: 40px;
+        }
+    </style>
+    <script>
+        window.onload = oppstart
+        function oppstart() {
+            //document.getElementById("numPorsjons").onkeydown = calculate;
+            //document.getElementById("numPorsjons").onkeyup = calculate;
+            document.getElementById("submit").onclick = check1;
+        }
+        function check1()
+        {
+            if (document.getElementById("heightInput").value == '' || document.getElementById("weightInput").value == '') {
+                alert("Vennligst fyll inn informasjon!");
+                return;
+            }
+            else
+            {
+                calculate(document.getElementById("heightInput").value, document.getElementById("weightInput").value);
+            }
+        }
+        function calculate(height, weight) 
+        {
+            document.getElementById("image1").style.display = "block";
+            var bmi = ((weight/(height*height)) * 10000).toFixed(1);
+            document.getElementById("BMI-span").innerHTML = bmi;
+            if(bmi < 18.5)
+            {
+                var message = "undervektig (du har en BMI på under 18,5)";
+            
+            }
+            else if(bmi >= 18.5 && bmi < 25)
+            {
+                var message = "normalvektig (du har en BMI på mellom 18,5 og 25.)";
+            }
+            else if (bmi >= 25 && bmi < 30) 
+            {
+
+                var message = "litt overvektig (du har en BMI på mellom 25 og 30.)";
+            }
+            else if (bmi >= 30 && bmi < 35) 
+            {
+
+                var message = "moderat overvektig (du har en BMI på mellom 30 og 35.)";
+            }
+            else if (bmi >= 35 && bmi < 40) 
+            {
+
+                var message = "overvektig (du har en BMI på mellom 35 og 40.)";
+            }
+            else 
+            {
+
+                var message = "svært overvektig (du har en BMI på over 40.)";
+            }
+            document.getElementById("BMI-message").style.display = "block";
+            document.getElementById("BMI-message-span").innerHTML = message;
+            document.getElementById("message").innerHTML = "Din BMI er:  " + bmi;
+        }
+
+    </script>
+</head>
+
+<body>
+    <div id="boxBig" class="">
+        <h1>BMI kalkulator</h1>
+        <p>Vekt (kg): <input class="w3-input" type="number" id="weightInput"/></p>
+        <p>Høyde (cm): <input class="w3-input" type="number" id="heightInput"/></p>
+        <button id="submit">Send</button>
+        <img src ="bb_logo.png" id ="image1"/>
+        <p id ="message"></p>
+        <p2 id ="BMI-message">Med en BMI på <span id ="BMI-span"></span> er du <span id ="BMI-message-span"></span></p2>
+    </div>
+</body>
+</html>

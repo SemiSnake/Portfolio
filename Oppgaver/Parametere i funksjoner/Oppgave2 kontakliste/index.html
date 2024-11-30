@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kontakliste</title>
+    <style>
+        ul
+        {
+            list-style: none;
+        }
+        li
+        {
+            border: 5px solid black;
+        }
+    </style>
+    <script>
+        window.onload = start;
+        var fornavnInput;
+        var etternavnInput;
+        var tlfInput;
+        var submit;
+        //var listNum = 0;
+        function start()
+        {
+            submit = document.getElementById("Submit");
+            submit.onclick = perimetercheck;
+        }
+        function perimetercheck()
+        {
+            fornavnInput = document.getElementById("fornavn").value;
+            etternavnInput = document.getElementById("etternavn").value;
+            tlfInput = document.getElementById("tlf").value;
+            if(fornavnInput == '' || etternavnInput == '' || tlfInput == '')
+            {
+                alert("Fyll inn all informasjon");
+            }
+            else
+            {
+                createElement(fornavnInput, etternavnInput, tlfInput);
+            }
+            
+        }
+        function createElement(fornavn, etternavn, tlf)
+        {
+            //listNum ++;
+            var listEl = document.createElement("li");
+            var allText = document.createTextNode(/*listNum + ". " + */fornavn + " " + etternavn + " " + tlf);
+            listEl.appendChild(allText);
+            
+            document.getElementById("skjemaliste").appendChild(listEl);
+        }
+    </script>
+</head>
+
+<body>
+    Fornavn: <input type="text" id ="fornavn"><br><br>
+    Etternavn: <input type="text" id ="etternavn"><br><br>
+    Tlf nr: <input type="number" id="tlf" maxlength="8"><br><br>
+    <button id ="Submit">Send inn</button>
+    <div id ="listDiv"> 
+        <ol id ="skjemaliste">
+        </ol>
+    </div>
+</body>
+</html>

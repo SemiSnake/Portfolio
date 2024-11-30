@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        p2
+        {
+            font-size: 15pt;
+        }
+        p
+        {
+            font-size: 20pt;
+        }
+    </style>
+</head>
+    <script>
+        window.onload = oppstart;
+        function oppstart()
+        {
+            document.getElementById("text").onchange = endre;
+        }
+        function endre()
+        {
+           
+            var feedbackMessage = document.getElementById("feedback");
+            var textvalue = document.getElementById("text").value;
+            feedbackMessage.style.display = "block";
+            if(textvalue == 10)
+            {
+                feedbackMessage.innerHTML = "Riktig svar! Alle er fiskene er fortsatt i bollen!";
+            }
+            else
+            {
+                feedbackMessage.innerHTML = "Feil svar! Prøv igjen!"
+            }
+        }
+    </script>
+<body>
+    <div style ="width: 600px; height: 400px; position: absolute; left: 30%; top: 20%; background-color: teal; border: 5px solid black;">
+        <h1>Hvor mange fisker er i bollen?</h1>
+        <img src="fisk1.png" alt="Fisk" style = "width: 100px; height: auto; position: absolute; right: 0px ">
+        <p2>
+            Det var 10 fisker i en bolle<br>
+            3 fisker druknet<br>
+            3 fisker døde<br>
+            4 fisker svømmer rundt<br>
+            1 fisk ble ignorert<br><br>
+            <label for ="num">Hvor mange fisk er igjen i bollen?</label><input name ="num" type = "number" id ="text"></input>
+        </p2>
+        <p id ="feedback" style = "display: none"></p>
+    </div>
+</body>
+</html>

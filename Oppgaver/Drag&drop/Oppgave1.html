@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="no">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <title>Sorter tallene!</title>
+    <style>
+        .numPic {
+            height: 100px;
+            width: auto;
+            position: absolute;
+        }
+
+        .bigBox
+        {
+            position: absolute;
+            left: 10%;
+            top: 10%;
+            background-color: purple;
+            width: 1500px;
+            text-align: center;
+        }
+        .emptyBox
+        {
+            position: relative;
+            margin-top: 0;
+            width: 200px;
+            height: 200px;
+            background-color: red;
+            display: inline-block;
+           
+        }
+        ul
+        {
+            list-style: none;
+        }
+        li {
+            display: inline;
+        
+        }
+
+        #randomize
+        {
+            margin-bottom: 5%;
+            width: 800px;
+            height: 150px;
+        }
+        #randomize > p
+        {
+            font-size: 60px;
+            margin-top: 28px;
+        }
+    </style>
+    <script>
+        window.onload = oppstart
+        var sourceId = 0;
+        var numStr = "";
+        var invalidNums = [];
+        var elementId;
+        function oppstart() 
+        {
+            randomizeNumbersExclusive()
+            document.getElementById("randomize").onclick = randomizeNumbersExclusive;
+        }
+        function randomizeNumbersExclusive()
+        {
+            invalidNums = [];
+            for (var i = 0; i < 10; i++) {
+
+                do {
+                    sourceId = (Math.random() * 9).toFixed(0);
+                }
+                while (invalidNums.includes(parseInt(sourceId)));
+
+                invalidNums[i] = parseInt(sourceId);
+                document.getElementById(parseInt(i)).draggable = true;
+                document.getElementById(parseInt(i)).ondrag = dra;
+                document.getElementById("boks" + parseInt(i)).ondragover = tillat;
+                document.getElementById("boks" + parseInt(i)).ondrop = slipp;
+                document.getElementById(parseInt(i)).src = parseInt(sourceId) + ".png";
+            }
+        }
+        function dra(evt) {
+            evt.dataTransfer.setData("obj", evt.target.id);
+            elementId = evt.target.id;
+      
+        }
+        function tillat(evt) 
+        {       
+            evt.preventDefault()
+           // elementId = evt.dataTransfer.getData("obj");
+            console.log(elementId)
+            
+        }
+        function slipp(evt)
+        {
+            evt.preventDefault();
+            //elementId = evt.dataTransfer.getData("obj");
+            evt.target.appendChild(document.getElementById(elementId));
+        }
+
+    </script>
+</head>
+
+<body>
+    <div class ="bigBox">
+    <ul id ="emptyBoxList">
+        <li><div class ="emptyBox" id="boks0"></div></li>
+        <li><div class ="emptyBox" id="boks1"></div></li>
+        <li><div class ="emptyBox" id="boks2"></div></li>
+        <li><div class ="emptyBox" id="boks3"></div></li>
+        <li><div class ="emptyBox" id="boks4"></div></li>
+        <li><div class ="emptyBox" id="boks5"></div></li>
+        <li><div class ="emptyBox" id="boks6"></div></li>
+        <li><div class ="emptyBox" id="boks7"></div></li>
+        <li><div class ="emptyBox" id="boks8"></div></li>
+        <li><div class ="emptyBox" id="boks9"></div></li>
+    </ul>
+    <Button id="randomize"><p>Nye tall</p></Button>
+    <ul id ="numList">
+        <li><img id="0" class="numPic" alt="number" src="0.png" /> </li>
+        <li><img id="1" class="numPic" alt="number" src="1.png" /> </li>
+        <li><img id="2" class="numPic" alt="number" src="2.png" /> </li>
+        <li><img id="3" class="numPic" alt="number" src="3.png" /> </li>
+        <li><img id="4" class="numPic" alt="number" src="4.png" /> </li>
+        <li><img id="5" class="numPic" alt="number" src="5.png" /> </li>
+        <li><img id="6" class="numPic" alt="number" src="6.png" /> </li>
+        <li><img id="7" class="numPic" alt="number" src="7.png" /> </li>
+        <li><img id="8" class="numPic" alt="number" src="8.png" /> </li>
+        <li><img id="9" class="numPic" alt="number" src="9.png" /> </li>
+    </ul>
+    
+</div>
+</body>
+
+</html>
